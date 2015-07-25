@@ -14,21 +14,21 @@
 ## Konfigurace
 
 ```html
-    $.form.liveValidationUrl = {link validate!}; // Optional - Globální nastavení pro live validaci
-    $.form.useLabels = true; // Vıchozí true - Pøi hodnotì true a pøi renderu chyb u formuláøe bere label pole a pøidá k chybové zprávì
+    $.form.liveValidationUrl = {link validate!}; // Optional - GlobÃ¡lnÃ­ nastavenÃ­ pro live validaci
+    $.form.useLabels = true; // VÃ½chozÃ­ true - PÅ™i hodnotÄ› true a pÅ™i renderu chyb u formulÃ¡Å™e bere label pole a pÅ™idÃ¡ k chybovÃ© zprÃ¡vÄ›
 ```
 
-Pro dynamicky pøidané formuláøe mùeme pøiøadit validaci za pomocí:
+Pro dynamicky pÅ™idanÃ© formulÃ¡Å™e mÅ¯Å¾eme pÅ™iÅ™adit validaci za pomocÃ­:
 
 ```html
     $.form.refresh();
 ```
 
-## Nastavení formuláøe pøes data atributy
+## NastavenÃ­ formulÃ¡Å™e pÅ™es data atributy
 
 ### data-novalidate
 
-Vynechá validaci celého formuláøe.
+VynechÃ¡ validaci celÃ©ho formulÃ¡Å™e.
 
 ```html
     <form n:name="name" data-novalidate>
@@ -36,7 +36,7 @@ Vynechá validaci celého formuláøe.
 
 ### data-novalidatelive
 
-Vynechá live validaci celého formuláøe.
+VynechÃ¡ live validaci celÃ©ho formulÃ¡Å™e.
 
 ```html
     <form n:name="name" data-novalidatelive>
@@ -44,7 +44,7 @@ Vynechá live validaci celého formuláøe.
 
 ### data-error-container
 
-Nastaví vlastní container pro chybové hlášky
+NastavÃ­ vlastnÃ­ container pro chybovÃ© hlÃ¡Å¡ky
 
 ```html
     <div id="myContainer"></div>
@@ -54,7 +54,7 @@ Nastaví vlastní container pro chybové hlášky
 
 ### data-error-type
 
-Nastaví container pro jednu chybovou hlášku.
+NastavÃ­ container pro jednu chybovou hlÃ¡Å¡ku.
 
 ```html
     <form n:name="name" data-error-type="strong class='input-error'">
@@ -64,13 +64,13 @@ Vygeneruje:
 
 ```html
     <div class="form-error-container">
-        <strong class="input-error">Tato poloka je povinná.</strong>
+        <strong class="input-error">Tato poloÅ¾ka je povinnÃ¡.</strong>
     </div>
 ```
 
 ### data-renderer 
 
-Nastaví renderer.
+NastavÃ­ renderer.
 
 ```html
     <form n:name="name" data-renderer="myRenderer">
@@ -78,17 +78,17 @@ Nastaví renderer.
 
 ### data-nolabel
 
-Vynechá chybovou hlášku s label.
+VynechÃ¡ chybovou hlÃ¡Å¡ku s label.
 
 ```html
     <form n:name="name" data-nolabel>
 ```
 
-## Nastavení pole pøes data atributy
+## NastavenÃ­ pole pÅ™es data atributy
 
 ### data-validatelive-url
 
-Na danou url adresu se pošlou údaje k vyhodnocení.
+Na danou url adresu se poÅ¡lou Ãºdaje k vyhodnocenÃ­.
 
 ```html
     <input n:name="name" data-validatelive-url="{link validateName!}">
@@ -104,7 +104,7 @@ Live validace se u tohoto pole neprovede
 
 ### data-error-container
 
-Nastaví vlastní container pro chybové hlášky
+NastavÃ­ vlastnÃ­ container pro chybovÃ© hlÃ¡Å¡ky
 
 ```html
     <input n:name="name" data-error-container="#customContainer">
@@ -114,7 +114,7 @@ Nastaví vlastní container pro chybové hlášky
 
 ### data-error-type
 
-Nastaví container pro jednu chybovou hlášku.
+NastavÃ­ container pro jednu chybovou hlÃ¡Å¡ku.
 
 ```html
     <input n:name="name" data-error-type="strong class='input-error'">
@@ -124,13 +124,13 @@ Vygeneruje:
 
 ```html
     <div class="form-error-container">
-        <strong class="input-error">Tato poloka je povinná.</strong>
+        <strong class="input-error">Tato poloÅ¾ka je povinnÃ¡.</strong>
     </div>
 ```
 
 ### data-novalidate
 
-Pole bude pøeskoèeno pøi validaci.
+Pole bude pÅ™eskoÄeno pÅ™i validaci.
 
 ```html
     <input n:name="name" data-novalidate>
@@ -138,31 +138,31 @@ Pole bude pøeskoèeno pøi validaci.
 
 ### data-label
 
-Nastaví label pro chybovou hlášku.
+NastavÃ­ label pro chybovou hlÃ¡Å¡ku.
 
 ```html
-    <input n:name="name" data-label="Uivatelské jméno">
+    <input n:name="name" data-label="UÅ¾ivatelskÃ© jmÃ©no">
 ```
 
 ### data-nolabel
 
-Vynechá chybovou hlášku s label.
+VynechÃ¡ chybovou hlÃ¡Å¡ku s label.
 
 ```html
     <input n:name="name" data-nolabel>
 ```
 
-## Nastavení odesílacích tlaèítek pøes data atributy
+## NastavenÃ­ odesÃ­lacÃ­ch tlaÄÃ­tek pÅ™es data atributy
 
 ### data-novalidate
 
-Vynechá validaci formuláøe po kliknutí na dané tlaèítko.
+VynechÃ¡ validaci formulÃ¡Å™e po kliknutÃ­ na danÃ© tlaÄÃ­tko.
 
 ```html
     <input n:name="back" data-novalidate>
 ```
 
-## Vlastní renderery
+## VlastnÃ­ renderery
 
 ```javascript
 
@@ -174,7 +174,7 @@ $.form.addRenderer('render', {
      * @param {SingleControl} ctrl
      */
     controlError: function (message, ctrl) {
-        // Odstranìní chyby u pole
+        // OdstranÄ›nÃ­ chyby u pole
     },
     /**
      * Errors at form
@@ -183,7 +183,7 @@ $.form.addRenderer('render', {
      * @param {SingleControl} ctrl
      */
     formError: function (message, ctrl) {
-        // Pøidání chyby u formuláøe
+        // PÅ™idÃ¡nÃ­ chyby u formulÃ¡Å™e
     },
     /**
      * Base method for adding error message
@@ -194,7 +194,7 @@ $.form.addRenderer('render', {
      * @param {string} type
      */
     addError: function (message, $container, ctrl, type) {
-        // Pøidání chyby
+        // PÅ™idÃ¡nÃ­ chyby
     },
     /**
      * Base method for removing error message
@@ -203,7 +203,7 @@ $.form.addRenderer('render', {
      * @param {SingleControl} ctrl
      */
     removeCustomError: function ($container, ctrl) {
-        // Odstranìní chyby 
+        // OdstranÄ›nÃ­ chyby 
     },
     /**
      * Method which removes error message at control
@@ -211,7 +211,7 @@ $.form.addRenderer('render', {
      * @param {SingleControl} ctrl
      */
     removeError: function (ctrl) {
-        // Odstranìní chyby u pole
+        // OdstranÄ›nÃ­ chyby u pole
     },
     /**
      * Method which removes error message at form
@@ -219,7 +219,7 @@ $.form.addRenderer('render', {
      * @param {SingleControl} ctrl
      */
     removeFormError: function (ctrl) {
-        // Odstranìní chyby u formuláøe
+        // OdstranÄ›nÃ­ chyby u formulÃ¡Å™e
     }
 });
 
