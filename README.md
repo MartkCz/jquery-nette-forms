@@ -84,6 +84,14 @@ Vynechá chybovou hlášku s label.
     <form n:name="name" data-nolabel>
 ```
 
+### data-errors-at
+
+```html
+    <form n:name="name" data-errors-at="form">
+```
+
+Nastaví vykreslovaní chyb u formuláře místo u inputů.
+
 ## Nastavení pole přes data atributy
 
 ### data-validatelive-url

@@ -11,6 +11,88 @@
     Nette.initForm =  function () {};
     Nette.addError = function () {};
 
+    // Logger
+    var logger = {
+        show: ['warn', 'log', 'error'],
+        use: true,
+        sprintf: function (message) {
+            var args = arguments;
+            delete args[0];
+
+            return message.replace(/{(\d+)}/g, function(match, number) {
+                if (args[number] === undefined) {
+                    return match;
+                }
+
+                if (args[number] instanceof Element || args[number] instanceof jQuery) {
+                    return that.cssPath(args[number]);
+                }
+
+                return args[number];
+            });
+        },
+        element: function (el) {
+            $el = $(el);
+
+            if ($el.attr('id')) {
+                return '#' + $el.attr('id');
+            }
+
+            if ($el.selector) {
+                return $el.selector;
+            }
+
+            if ($el.attr('class')) {
+                return '.' + $el.attr('class');
+            }
+
+            if ($el.context) {
+                return $el.context;
+            }
+
+            return '';
+        },
+        call_user_func_array: function call_user_func_array(cb, parameters) {
+            var func;
+
+            if (typeof cb === 'string') {
+                func = (typeof this[cb] === 'function') ? this[cb] : func = (new Function(null, 'return ' + cb))();
+            } else if (Object.prototype.toString.call(cb) === '[object Array]') {
+                func = (typeof cb[0] === 'string') ? eval(cb[0] + "['" + cb[1] + "']") : func = cb[0][cb[1]];
+            } else if (typeof cb === 'function') {
+                func = cb;
+            }
+
+            if (typeof func !== 'function') {
+                throw new Error(func + ' is not a valid function');
+            }
+
+            return (typeof cb[0] === 'string') ? func.apply(eval(cb[0]), parameters) : (typeof cb[0] !== 'object') ? func.apply(
+                null, parameters) : func.apply(cb[0], parameters);
+        },
+        log: function() {
+            if (!this.use || this.show.indexOf('log') === -1) {
+                return false;
+            }
+
+            console.log(this.call_user_func_array(this.sprintf, arguments));
+        },
+        warn: function () {
+            if (!this.use || this.show.indexOf('warn') === -1) {
+                return false;
+            }
+
+            console.warn(this.call_user_func_array(this.sprintf, arguments));
+        },
+        error: function () {
+            if (!this.use || this.show.indexOf('error') === -1) {
+                return false;
+            }
+
+            console.error(this.call_user_func_array(this.sprintf, arguments));
+        }
+    };
+
     var DataProvider = function ($frm, $ctrl) {
 
         this.getOption = function (name, exclude) {
@@ -52,7 +134,7 @@
         };
 
         this.isErrorAtForm = function () {
-            return this.getOption('error-type') === 'form';
+            return this.getOption('errors-at') === 'form';
         };
 
         this.getRenderer = function () {
@@ -102,7 +184,7 @@
 
         this.addError = function (message) {
             if (provider.getErrorContainer() !== undefined) {
-                provider.getRenderer().addError(message, provider.getErrorContainer(), this, provider.getErrorType());
+                provider.getRenderer().addError(message, provider.getErrorContainer(), this, provider.getErrorType(), true);
 
                 return;
             }
@@ -116,7 +198,7 @@
 
         this.removeError = function () {
             if (provider.getErrorContainer() !== undefined) {
-                provider.getRenderer().removeCustomError(provider.getErrorContainer(), this);
+                provider.getRenderer().removeBaseError(provider.getErrorContainer(), this, true);
 
                 return;
             }
@@ -297,6 +379,21 @@
         };
     };
 
+    var rendererHelper = {
+        formatLabel: function (ctrl, label) {
+            if (label !== undefined) {
+                label = label.substr(label.length - 1) === ':' ? label + ' ' : label + ': ';
+                label = '<strong>' + label + '</strong>';
+            } else {
+                label = '';
+
+                $.form.logger.log('Input does not have label. Please use [data-nolabel] or [data-label] or [placeholder] for {1}', $.form.logger.element(ctrl.getElement()));
+            }
+
+            return label;
+        }
+    };
+
     var forms = function () {
         var opt = {
             defaultRenderer: 'default',
@@ -305,25 +402,38 @@
 
         this.liveValidationUrl = null;
         this.useLabels = true;
+        this.logger = logger;
 
-        this.registerLibraries = function () {
-            if ($.fn.tokenInput) {
-                $('input[data-suggestion]').each(function () {
-                    $(this).tokenInput($(this).attr('data-url'), $.extend({
-                        hintText: _("Type in a search term"),
-                        noResultsText: _("No results"),
-                        searchingText: _("Searching...")
-                    }, $.parseJSON($(this).attr('data-suggestion'))));
+        this.rendererHelper = rendererHelper;
+
+        this.registerLibraries = function (translator) {
+            if ($.fn.datetimepicker) {
+                $('input.date-input').each(function () {
+                    $(this).datetimepicker($.extend({
+                        format: $(this).attr('data-format')
+                    }, $.parseJSON($(this).attr('data-settings'))));
+                });
+
+                $('.date-input-container.no-js').remove();
+            }
+
+            if ($.fn.autocomplete) {
+                $('input.suggestion-input').each(function () {
+                    el = $(this);
+
+                    el.autocomplete($.extend({
+                        source: el.attr('data-url')
+                    }, $.parseJSON(el.attr('data-suggestion'))));
                 });
             }
 
             if ($.fn.inputmask) {
-                $('input[data-inputmask]').each(function () {
-                    var settings = $.parseJSON($(this).attr('data-inputmask'));
+                $('input[data-mask-input]').each(function () {
+                    var settings = $.parseJSON($(this).attr('data-mask-input'));
                     if (settings.regex) {
-                        $(this).inputmask('Regex', $.parseJSON($(this).attr('data-inputmask')));
+                        $(this).inputmask('Regex', $.parseJSON($(this).attr('data-mask-input')));
                     } else {
-                        $(this).inputmask($.parseJSON($(this).attr('data-inputmask')));
+                        $(this).inputmask($.parseJSON($(this).attr('data-mask-input')));
                     }
                 });
             }
@@ -331,8 +441,9 @@
             if ($.fn.selectize) {
                 $('select.input-select').selectize();
 
-                $('input.input-tags').selectize({
-                    delimeter: ',',
+                $('input.tag-input').selectize({
+                    delimiter: ',',
+                    createTranslate: translator ? translator.translate('Add') : 'Add',
                     persist: false,
                     create: function (input) {
                         return {value: input, text: input}
@@ -350,7 +461,7 @@
         };
 
         this.addRenderer = function (name, object) {
-            $.each(['controlError', 'formError', 'addError', 'removeError', 'removeCustomError', 'removeFormError'], function (v, method) {
+            $.each(['controlError', 'formError', 'addError', 'removeError', 'removeBaseError', 'removeFormError'], function (v, method) {
                 if (typeof object[method] !== 'function') throw 'Renderer "' + name + '" has not method "' + method + '"';
             });
 
@@ -409,7 +520,7 @@
             return $form.children('.form-errors');
         },
         getControlLabel: function (ctrl) {
-            return ctrl.getLabel() || ctrl.getElement().closest('tr').find('label').text();
+            return ctrl.getLabel() || ctrl.getElement().closest('tr').find('label').text() || ctrl.getElement().attr('placeholder');
         },
         /**
          * Error at control
@@ -440,9 +551,7 @@
             var label = '';
 
             if (ctrl.useLabels()) {
-                label = this.getControlLabel(ctrl);
-                label = label.substr(label.length - 1) === ':' ? label + ' ' : label + ': ';
-                label = '<strong>' + label + '</strong>';
+                label = $.form.rendererHelper.formatLabel(ctrl, this.getControlLabel(ctrl));
             }
 
             $form = ctrl.getFormElement();
@@ -458,9 +567,29 @@
          * @param $container
          * @param {SingleControl} ctrl
          * @param {string} type
+         * @param {boolean} isCustom
          */
-        addError: function (message, $container, ctrl, type) {
+        addError: function (message, $container, ctrl, type, isCustom) {
             type = type || 'div';
+
+            // Custom error container
+            if (isCustom) {
+                // Check if exists
+                if ($container.length === 0) {
+                    $.form.logger.error('Custom container not exists: {1}', $.form.logger.element($container));
+                }
+
+                // Labels
+                if ($container.attr('data-use-labels') !== undefined) {
+                    var label = '';
+
+                    if (ctrl.useLabels()) {
+                        label = $.form.rendererHelper.formatLabel(ctrl, this.getControlLabel(ctrl));
+                    }
+
+                    message = label + message;
+                }
+            }
 
             var div = $('<' + type + ' />', {
                 'data-form-control': ctrl.getId()
@@ -473,8 +602,9 @@
          *
          * @param $container
          * @param {SingleControl} ctrl
+         * @param {boolean} isCustom
          */
-        removeCustomError: function ($container, ctrl) {
+        removeBaseError: function ($container, ctrl, isCustom) {
             $container.find('[data-form-control="' + ctrl.getId() + '"]').remove();
         },
         /**
@@ -489,7 +619,7 @@
             ctrl.getElement().closest('tr').removeClass('has-error');
             $container.find('.form-info').show();
 
-            this.removeCustomError($container, ctrl);
+            this.removeBaseError($container, ctrl);
         },
         /**
          * Method which removes error message at form
@@ -499,7 +629,7 @@
         removeFormError: function (ctrl) {
             $container = this.createFormErrorContainer(ctrl.getFormElement());
 
-            this.removeCustomError($container, ctrl);
+            this.removeBaseError($container, ctrl);
         }
     });
 
@@ -539,7 +669,7 @@
             this.addError(message, $container, ctrl);
         },
         getControlLabel: function (ctrl) {
-            return ctrl.getLabel() || ctrl.getElement().closest('.form-group').find('label').text();
+            return ctrl.getLabel() || ctrl.getElement().closest('.form-group').find('label').text()  || ctrl.getElement().attr('placeholder');
         },
         /**
          * Errors at form
@@ -551,9 +681,7 @@
             var label = '';
 
             if (ctrl.useLabels()) {
-                label = this.getControlLabel(ctrl);
-                label = label.substr(label.length - 1) === ':' ? label + ' ' : label + ': ';
-                label = '<strong>' + label + '</strong>';
+                label = $.form.rendererHelper.formatLabel(ctrl, this.getControlLabel(ctrl));
             }
 
             $form = ctrl.getFormElement();
@@ -568,10 +696,30 @@
          * @param $container
          * @param {SingleControl} ctrl
          * @param {string} type
+         * @param {boolean} isCustom
          */
-        addError: function (message, $container, ctrl, type) {
+        addError: function (message, $container, ctrl, type, isCustom) {
             type = type || 'p class="help-block"';
             $ctrl = ctrl.getElement();
+
+            // Custom error container
+            if (isCustom) {
+                // Check if exists
+                if ($container.length === 0) {
+                    $.form.logger.error('Custom container not exists: {1}', $.form.logger.element($container));
+                }
+
+                // Labels
+                if ($container.attr('data-use-labels') !== undefined) {
+                    var label = '';
+
+                    if (ctrl.useLabels()) {
+                        label = $.form.rendererHelper.formatLabel(ctrl, this.getControlLabel(ctrl));
+                    }
+
+                    message = label + message;
+                }
+            }
 
             $el = $('<' + type + ' />').html(message).attr('data-form-control', ctrl.getId());
 
@@ -582,8 +730,9 @@
          *
          * @param $container
          * @param {SingleControl} ctrl
+         * @param {boolean} isCustom
          */
-        removeCustomError: function ($container, ctrl) {
+        removeBaseError: function ($container, ctrl, isCustom) {
             $container.find('[data-form-control="' + ctrl.getId() + '"]').remove();
         },
         /**
@@ -595,7 +744,7 @@
             $ctrl = ctrl.getElement();
             $group = $ctrl.closest('.form-group');
 
-            this.removeCustomError(this.createContainer($ctrl), ctrl);
+            this.removeBaseError(this.createContainer($ctrl), ctrl);
 
             $group.removeClass('has-error');
             $group.find('.help-block').show();
@@ -608,7 +757,7 @@
         removeFormError: function (ctrl) {
             $container = this.createFormContainer(ctrl.getFormElement());
 
-            this.removeCustomError($container, ctrl);
+            this.removeBaseError($container, ctrl);
         }
     });
 })(window, jQuery);
