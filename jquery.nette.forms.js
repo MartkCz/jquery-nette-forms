@@ -112,7 +112,7 @@
         };
 
         this.isLiveValidation = function () {
-            if (this.checkOption('novalidatelive') === true) {
+            if (this.checkOption('novalidatelive') === true || this.checkOption('live-validation') === false) {
                 return false;
             }
 
@@ -219,6 +219,10 @@
         };
 
         this.getPath = function () {
+            if ($ctrl.attr('data-live-validation')) {
+                return $ctrl.attr('data-live-validation');
+            }
+
             if (this.getId()) {
                 return this.getId().substr(4) === 'frm-' ? this.getId().substr(4) : this.getId();
             }
@@ -591,9 +595,7 @@
                 }
             }
 
-            var div = $('<' + type + ' />', {
-                'data-form-control': ctrl.getId()
-            }).html(message);
+            var div = $('<' + type + ' />').attr('data-form-control', ctrl.getId()).html(message);
 
             $container.prepend(div);
         },
