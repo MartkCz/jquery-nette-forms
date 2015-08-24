@@ -224,7 +224,7 @@
             }
 
             if (this.getId()) {
-                return this.getId().substr(4) === 'frm-' ? this.getId().substr(4) : this.getId();
+                return this.getId().substr(0, 4) === 'frm-' ? this.getId().substr(4) : this.getId();
             }
 
             return undefined;
